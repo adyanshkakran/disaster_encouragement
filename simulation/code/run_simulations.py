@@ -15,22 +15,22 @@ from visualizer import Visualizer
 
 # Start and end time, stepsize
 t_start = 0
-t_end = 400
+t_end = 600
 stepsize = 1e-2
 
 def beta(t):
     if t < 100:
-        return matrix(vector([0.15]).reshape((1, 1)))
-    elif t < 200:
-        return matrix(vector([0.08]).reshape((1, 1)))
+        return matrix(vector([((0.1)*(100 - t)/100) + 0.05]).reshape((1, 1)))
     elif t < 300:
-        return matrix(vector([0.3]).reshape((1, 1)))
+        return matrix(vector([0.05]).reshape((1, 1)))
+    elif t < 400:
+        return matrix(vector([0.25 + ((0.1)*(400 - t)/100)]).reshape((1, 1)))
     else:
-        return matrix(vector([0.1]).reshape((1, 1)))
+        return matrix(vector([0.075]).reshape((1, 1)))
 
 # Preparing data parsing
 # data_set_name = "scenarios-underlying-figure-4"
-data_set_name = "my_scenario"
+data_set_name = "second_wave"
 data_directory_name = "../data/" + data_set_name + "/"
 data_directory = os.fsencode(data_directory_name)
 
