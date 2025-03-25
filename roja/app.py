@@ -346,3 +346,5 @@ with st.expander("🧬 Mutation Frequency", expanded=False):
     with col2:
         st.plotly_chart(fig6, use_container_width=True)  # Center the plot and allow it to stretch within the middle column
 
+with st.expander("🦠 SEI³RD Pandemic Simulator", expanded=False):
+    st.write("ello apan ka simulation")
