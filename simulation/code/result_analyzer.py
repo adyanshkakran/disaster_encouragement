@@ -181,7 +181,7 @@ class Result_Analyzer:
 
     def _compute_duration_of_pandemic(self):
         # Compute duration of pandemic
-        threshold = 0.05 * self.beds
+        threshold = 0.15 * self.beds
         time_points_below_threshold = 0
         sev_below_at_end = (self.sev_total[-1] < threshold)
         assert(sev_below_at_end)
