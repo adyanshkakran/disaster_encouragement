@@ -46,7 +46,7 @@ class SEIIIRD_Model:
         gamma_sym = self.time_dependent_params.get('gamma_sym', lambda t: self.gamma_sym)(t)
         gamma_sev_d = self.time_dependent_params.get('gamma_sev_d', lambda t: self.gamma_sev_d)(t)
         gamma_sev_r = self.time_dependent_params.get('gamma_sev_r', lambda t: self.gamma_sev_r)(t)
-
+        
         # Sanity checks
         assert(x.shape[0] == 7 * self.K)
         # print(abs(sum(x) - sum(self.N)))

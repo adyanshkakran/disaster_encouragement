@@ -95,6 +95,9 @@ class Data_Reader:
                 elif row[0] == "D":
                     D = vector(self._to_float(row[1:1+K]))
                     assert(len(D) == K)
+                # elif row[0] == "imm_rate":
+                #     imm_rate = vector(self._to_float(row[1:1+K]))
+                #     assert(len(imm_rate) == K)
                 else:
                     print("Unknown data field: " + str(row[0]))
                     assert(False)

@@ -166,8 +166,6 @@ class Visualizer:
             #     x=0.01
             # )
         )
-        
-        fig.show()
 
         fig.write_image(self.filename + "_aggr_full.png")
         ymax = 0.2 * self.N_total

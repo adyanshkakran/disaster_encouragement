@@ -1,3 +1,3 @@
-Total number of deaths:              2275352.420767613
-Days with exceeded ICU bed capacity: 155.86
-Duration of pandemic (in days):      239.54000000000002
+Total number of deaths:              1599352.4169839309
+Days with exceeded ICU bed capacity: 297.25
+Duration of pandemic (in days):      400.0

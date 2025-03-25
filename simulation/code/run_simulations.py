@@ -1,6 +1,8 @@
 # Global imports
 import os
 import time
+from numpy import array as vector
+from numpy import matrix as matrix
 
 # Local imports
 from data_reader import Data_Reader # reader for old data format
@@ -18,15 +20,17 @@ stepsize = 1e-2
 
 def beta(t):
     if t < 100:
-        return 0.25
+        return matrix(vector([0.15]).reshape((1, 1)))
     elif t < 200:
-        return 0.1
+        return matrix(vector([0.08]).reshape((1, 1)))
+    elif t < 300:
+        return matrix(vector([0.3]).reshape((1, 1)))
     else:
-        return 0.4
+        return matrix(vector([0.1]).reshape((1, 1)))
 
 # Preparing data parsing
 # data_set_name = "scenarios-underlying-figure-4"
-data_set_name = "india"
+data_set_name = "my_scenario"
 data_directory_name = "../data/" + data_set_name + "/"
 data_directory = os.fsencode(data_directory_name)
 
@@ -53,8 +57,8 @@ for file in os.listdir(data_directory):
             ode_system = SEIIIRD_Tracing_Model(packed_data[1:-1])
         else:
             print("Setting up the tracing-free model")
-            # ode_system = SEIIIRD_Model(packed_data[1:-1], time_dependent_params={'beta_asym': beta, 'beta_sym': beta, 'beta_sev': beta})
-            ode_system = SEIIIRD_Model(packed_data[1:-1])
+            ode_system = SEIIIRD_Model(packed_data[1:-1], time_dependent_params={'beta_asym': beta, 'beta_sym': beta, 'beta_sev': beta})
+            # ode_system = SEIIIRD_Model(packed_data[1:-1])
 
         # Solve the ODE system
         explicit_euler = Explicit_Euler(ode_system, stepsize)
