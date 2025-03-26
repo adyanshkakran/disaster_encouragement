@@ -13,11 +13,6 @@ from explicit_euler import Explicit_Euler
 from result_analyzer import Result_Analyzer
 from visualizer import Visualizer
 
-# Start and end time, stepsize
-t_start = 0
-t_end = 600
-stepsize = 1e-2
-
 def beta(t):
     if t < 100:
         return matrix(vector([((0.1)*(100 - t)/100) + 0.05]).reshape((1, 1)))
@@ -28,63 +23,73 @@ def beta(t):
     else:
         return matrix(vector([0.075]).reshape((1, 1)))
 
-# Preparing data parsing
-# data_set_name = "scenarios-underlying-figure-4"
-data_set_name = "second_wave"
-data_directory_name = "../data/" + data_set_name + "/"
-data_directory = os.fsencode(data_directory_name)
+def run_simulation(data_set_name):
+    t_start = 0
+    t_end = 600
+    stepsize = 1e-2
 
-for file in os.listdir(data_directory):
-    data_filename = os.fsdecode(file)
-    if data_filename.endswith(".csv"):
+    # Preparing data parsing
+    # data_set_name = "scenarios-underlying-figure-4"
+    data_directory_name = "../data/" + data_set_name + "/"
+    data_directory = os.fsencode(data_directory_name)
 
-        # Parsing the data
-        data_filename_prefix = data_filename.split(".")[0]
-        data_reader = Data_Reader()
-        packed_data = data_reader.read_from_csv_file(data_directory_name + data_filename_prefix + ".csv")
+    for file in os.listdir(data_directory):
+        data_filename = os.fsdecode(file)
+        if data_filename.endswith(".csv"):
 
-        # Unpacking some of the parsed data
-        tracing_data_given = packed_data[0]
-        assert(isinstance(tracing_data_given, bool))
-        K = packed_data[1]
-        N = packed_data[2]
-        beds = packed_data[-2]
-        x0 = packed_data[-1]
+            # Parsing the data
+            data_filename_prefix = data_filename.split(".")[0]
+            data_reader = Data_Reader()
+            packed_data = data_reader.read_from_csv_file(data_directory_name + data_filename_prefix + ".csv")
 
-        # Instantiate the ODE system class
-        if tracing_data_given:
-            print("Setting up the tracing model")
-            ode_system = SEIIIRD_Tracing_Model(packed_data[1:-1])
-        else:
-            print("Setting up the tracing-free model")
-            ode_system = SEIIIRD_Model(packed_data[1:-1], time_dependent_params={'beta_asym': beta, 'beta_sym': beta, 'beta_sev': beta})
-            # ode_system = SEIIIRD_Model(packed_data[1:-1])
+            # Unpacking some of the parsed data
+            tracing_data_given = packed_data[0]
+            assert(isinstance(tracing_data_given, bool))
+            K = packed_data[1]
+            N = packed_data[2]
+            beds = packed_data[-2]
+            x0 = packed_data[-1]
 
-        # Solve the ODE system
-        explicit_euler = Explicit_Euler(ode_system, stepsize)
-        start_time = time.time()
-        results = explicit_euler.solve(t_start, x0, t_end)
-        end_time = time.time()
-        print("Required CPU time = " + str(round(end_time - start_time, 3)) + " seconds")
+            # Instantiate the ODE system class
+            if tracing_data_given:
+                print("Setting up the tracing model")
+                ode_system = SEIIIRD_Tracing_Model(packed_data[1:-1])
+            else:
+                print("Setting up the tracing-free model")
+                ode_system = SEIIIRD_Model(packed_data[1:-1], time_dependent_params={'beta_asym': beta, 'beta_sym': beta, 'beta_sev': beta})
+                # ode_system = SEIIIRD_Model(packed_data[1:-1])
 
-        # Analyze results
-        path = "../results/" + data_set_name + "/"
-        if not os.path.exists(path):
-            os.makedirs(path)
-        result_analyzer = Result_Analyzer(tracing_data_given, results, stepsize,
-                                          N, K, beds, t_start, t_end,
-                                          path + data_filename_prefix)
-        result_analyzer.extract_results()
-        result_dict = result_analyzer.get_extracted_results_as_dict()
-        result_analyzer.compute_and_write_results()
+            # Solve the ODE system
+            explicit_euler = Explicit_Euler(ode_system, stepsize)
+            start_time = time.time()
+            results = explicit_euler.solve(t_start, x0, t_end)
+            end_time = time.time()
+            print("Required CPU time = " + str(round(end_time - start_time, 3)) + " seconds")
 
-        # Visualize results
-        visualizer = Visualizer(tracing_data_given, result_dict, N, K, beds, t_start, t_end,
-                                "../results/" + data_set_name + "/" + data_filename_prefix)
+            # Analyze results
+            path = "../results/" + data_set_name + "/"
+            if not os.path.exists(path):
+                os.makedirs(path)
+            result_analyzer = Result_Analyzer(tracing_data_given, results, stepsize,
+                                            N, K, beds, t_start, t_end,
+                                            path + data_filename_prefix)
+            result_analyzer.extract_results()
+            result_dict = result_analyzer.get_extracted_results_as_dict()
+            result_analyzer.compute_and_write_results()
 
-        visualizer.plot_all_curves()
-        visualizer.plot_aggregated_curves()
-        # visualizer.paper_plot_figure_1()
-        if tracing_data_given:
-            visualizer.paper_plot_figure_3()
-            visualizer.paper_plot_figure_4()
+            # Visualize results
+            visualizer = Visualizer(tracing_data_given, result_dict, N, K, beds, t_start, t_end,
+                                    "../results/" + data_set_name + "/" + data_filename_prefix)
+
+            visualizer.plot_all_curves()
+            visualizer.plot_aggregated_curves()
+            # visualizer.paper_plot_figure_1()
+            if tracing_data_given:
+                visualizer.paper_plot_figure_3()
+                visualizer.paper_plot_figure_4()
+
+def main():
+    run_simulation("Alpha")
+    
+if __name__ == "__main__":
+    main()
