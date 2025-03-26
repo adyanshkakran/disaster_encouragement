@@ -17,8 +17,37 @@ st.set_page_config(layout="wide")
 # Page Title
 st.title("THE PANDEMIC: TRENDS IN COVID-19 VARIANTS")
 
-st.header("Introduction")
-st.write("ello apan k aproject hai")
+st.markdown(""" 
+## Introduction
+The **COVID-19 pandemic** was one of the most significant global health crises in modern history, caused by the **SARS-CoV-2 virus**. First identified in late 2019, the virus spread rapidly, leading to widespread illness, healthcare strain, and unprecedented public health responses.
+            """)
+col1, col2 = st.columns([3, 2])  # Adjust column widths as needed
+
+with col1:
+    st.write("""   
+    ### **Understanding COVID-19 Variants**  
+    Viruses constantly evolve, and **COVID-19 variants** emerged as the virus spread worldwide. Some of these changes had **major public health implications**, leading to the classification of variants into three categories:  
+
+    - **Variant Under Monitoring (VUM)** – A variant that requires close tracking due to potential risks.  
+    - **Variant of Interest (VOI)** – A variant with genetic changes that may affect its spread, severity, or treatment.  
+    - **Variant of Concern (VOC)** – A variant that significantly impacts disease severity, vaccine effectiveness, or healthcare systems.
+
+    ### **What This Dashboard Offers**  
+    This interactive dashboard provides a **quick and clear overview** of COVID-19 and its variants, tracking their prevalence, mutations, and seasonal patterns. 
+
+    The variants we’ve focused on in this dashboard are:  
+
+    - **Alpha (B.1.1.7)**  
+    - **Beta (B.1.351)** 
+    - **Gamma (B.1.1.28.1)** 
+    - **Delta (B.1.617.2)**  
+    - **Omicron (B.1.1.529)** 
+
+    These variants played a key role in shaping the course of the pandemic, influencing public health responses and vaccine development.
+    """)
+
+with col2:
+    st.image("intro.jpg", caption="COVID-19 Variants Emergence", use_container_width=True)
 
 # Data Processing
 time_series_variants = pd.read_csv('time_series_variants.csv', index_col='Date', parse_dates=True)
@@ -33,36 +62,35 @@ for variant in variants:
     dfs.append(df)
 data = pd.concat(dfs, ignore_index=True)
 
-st.markdown("""
-    <style>
-    .st-expander {
-        font-size: 20px !important;  /* Adjust size as needed */
-        font-weight: bold !important; /* Make it bold */
-    }
-    </style>
-""", unsafe_allow_html=True)
+# st.markdown("""
+#     <style>
+#     .st-expander {
+#         font-size: 20px !important;  /* Adjust size as needed */
+#         font-weight: bold !important; /* Make it bold */
+#     }
+#     </style>
+# """, unsafe_allow_html=True)
 
 # 📈 Time Series of Variants
 with st.expander("📈 Time Series of Variants", expanded=False):
 # st.header("📈 Time Series of Variants")
-    summary = """Pmdarima  \n\n\n\n\n (originally pyramid-arima, for the anagram of 'py' + 'arima') is a statistical library designed to fill the void in Python's time series analysis capabilities. This includes
-    The equivalent of R's auto.arima functionality
-    A collection of statistical tests of stationarity and seasonality
-    Time series utilities, such as differencing and inverse differencing
-    Numerous endogenous and exogenous transformers and featurizers, including Box-Cox and Fourier transformations
-    Seasonal time series decompositions
-    Cross-validation utilities
-    A rich collection of built-in time series datasets for prototyping and examples
-    Scikit-learn-esque pipelines to consolidate your estimators and promote productionization
-    Pmdarima wraps statsmodels under the hood, but is designed with an interface that's familiar to users coming from a scikit-learn background."""
 
     # Create a 2x3 grid using st.columns()
     cols = st.columns(2)  # 3 columns in the first row
 
     # First box (Summary Text) in the first column
     with cols[0]:  
-        # st.markdown("### Summary")
-        st.write(summary)
+        st.markdown("""
+    # Time Series of COVID-19 Variants
+    
+    These graphs present the global time series vs cases per million of COVID-19 variants over time. Each subplot represents a specific variant (**Beta, Alpha, Gamma, Delta, Omicron**).
+    ### **Key Observations:**  
+    - **Alpha & Beta (Early 2021):** These variants showed early peaks but declined as new variants emerged.  
+    - **Gamma & Delta (Mid-2021):** Delta exhibited a strong presence, outcompeting earlier variants due to its higher transmissibility.  
+    - **Omicron (Late 2021 - 2022):** A sharp increase in Omicron sequences highlights its rapid spread and dominance, surpassing previous variants.  
+
+    This visualization shows how different variants **rose and fell over time**, correlating with major COVID-19 waves worldwide.
+                    """)
         
     colors = ['blue', 'green', 'red', 'purple', 'orange']
 
@@ -140,12 +168,21 @@ with st.expander("📊 STL Decomposition for Variants", expanded=False):
 
     # First column (Row 1): Explanation Text
     with cols[0]:  
-        # st.markdown("### Understanding STL Decomposition")
-        st.write(
-            "- **Trend**: The long-term movement in the time series.\n"
-            "- **Seasonality**: Recurring patterns or cycles at regular intervals.\n"
-            "- **Residuals**: The remaining variation after removing trend and seasonality."
-        )
+        st.markdown("""
+                    # **STL Decomposition for Variants**  
+
+STL (Seasonal-Trend Decomposition using LOESS) helps break down time series data into three components: **Trend, Seasonality, and Residuals**, providing insights into COVID-19 variant spread.  
+
+1. **Trend:** Captures long-term movement in variant prevalence, showing whether a variant is gaining dominance and how interventions affect its spread.  
+2. **Seasonality:** Identifies recurring patterns influenced by weather, human behavior, and epidemiological cycles, helping distinguish periodic spikes from true variant growth.  
+3. **Residuals:** Represents unexplained variations due to sudden mutations, policy changes, or reporting inconsistencies, signaling unpredictable shifts in variant spread.  
+
+### **Why Use STL Decomposition?**  
+- Differentiates between sustained growth and short-term fluctuations.  
+- Highlights seasonal patterns that impact outbreaks.  
+- Detects unexpected shifts, possibly indicating new variants or external influences.
+                    
+                    """)
     
     # Second column (Row 1): Trend Plot
     with cols[1]:  
@@ -221,9 +258,16 @@ with st.expander("📊 STL Decomposition for Variants", expanded=False):
 
 # 🌍 Seasonal Emergence
 with st.expander("🌍 Seasonal Emergence of Variants", expanded=False):
-    st.write(
-        "YOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOo"
-    )
+    st.markdown("""
+
+# Variant Emergence by Season (Global vs. India)  
+
+### **Key Insights:**
+1. **Delta (21A.Delta)** originated in India and peaked early (Spring 2021), while globally, it became dominant later in Summer and Fall (Jun-Nov).  
+2. **Omicron (21K.Omicron)** dominated globally in Fall (Sep-Nov), but India saw a relatively lower surge compared to the world.  
+3. **Alpha (20I.Alpha.V1)** was significant globally in Winter (Dec-Feb), but its impact in India was lower due to Delta’s early spread.  
+4. **Beta (20H.Beta.V2)** had a continuous presence, especially in Winter, showing its persistence in India and globally.  
+5. **Gamma (20J.Gamma.V3)** was a global concern but had minimal presence in India.  """)
     weekly_data['Month'] = weekly_data.index.month
     weekly_data['Season'] = weekly_data['Month'].apply(lambda x: 'Winter (Dec-Feb)' if x in [12, 1, 2] else
                                                                'Spring (Mar-May)' if x in [3, 4, 5] else
@@ -300,6 +344,18 @@ with st.expander("🌍 Seasonal Emergence of Variants", expanded=False):
 
 # 🔮 Forecasting of Variants
 with st.expander("🔮 Forecasting of Variants", expanded=False):
+    st.markdown("""
+    # **ARIMA Forecast for COVID-19 Variants**  
+    Here we display an **ARIMA (AutoRegressive Integrated Moving Average) forecast** for the COVID-19 variant of your choice. The left graph shows historical case counts over time, while the right graph presents the projected case trends for the next **n** chosen weeks.  
+
+    ### **How ARIMA Works**  
+    ARIMA is a time series forecasting model that combines three key components:  
+    - **AutoRegression (AR):** Uses past values to predict future values.  
+    - **Differencing (I):** Removes trends to make the data stationary.  
+    - **Moving Average (MA):** Accounts for past forecast errors to improve predictions.  
+
+    ARIMA is effective in capturing temporal patterns and making short-term forecasts, as seen in the increasing trend in the right graph. However, it assumes that future trends follow past patterns, so unexpected external factors (e.g., new mutations, policy changes) may impact real-world outcomes.
+                """)
     variant = st.selectbox("Select a variant to forecast:", variants)
     forecast_steps = st.selectbox("Select the number of weeks to forecast for:", [6, 12, 24])
 
@@ -318,11 +374,12 @@ with st.expander("🔮 Forecasting of Variants", expanded=False):
 # 🧬 Mutation Frequency
 with st.expander("🧬 Mutation Frequency", expanded=False):
     # st.markdown("### Understanding Mutation Frequency")
-    st.write(
-        "This heatmap visualizes the prevalence of different mutations across COVID-19 variants. "
-        "Darker shades indicate higher mutation frequencies, helping to track variant evolution over time."
-    )
-    
+    st.markdown("""
+
+# Mutations and Variants Explained 
+The Centers for Disease Control (CDC) defines a mutation as a single change in a virus’ genome or genetic code. Viruses like COVID-19 constantly mutate as they replicate in human cells. Most mutations are minor, but some can give the virus an advantage—making it spread faster or evade immunity. When this happens, a new **variant** is formed.   Scientists track these changes by mapping the virus’s genetic code, allowing them to observe COVID-19’s evolution in real time. To simplify variant tracking, the **World Health Organization (WHO)** named them after Greek letters (Alpha, Beta, Delta, Omicron, etc.).  
+Think of the virus as a tree—COVID-19 is the trunk, and variants are its growing branches. Some, like Omicron, have mutations that increase transmissibility but cause milder disease. By studying these changes, scientists can assess risks and predict how future variants might behave.
+                """)
     mutation_df = pd.read_csv("mutations.csv", index_col=0)
     
     # Create a smaller heatmap
@@ -338,6 +395,9 @@ with st.expander("🧬 Mutation Frequency", expanded=False):
         autosize=False, 
         width=700,  # Reduce width for better readability
         height=600,
+        title="Mutation Frequency Heatmap",
+        yaxis_title="Mutations",
+        xaxis_title="Variants",
         margin=dict(l=50, r=50, t=50, b=50)
     )
     
@@ -345,6 +405,21 @@ with st.expander("🧬 Mutation Frequency", expanded=False):
     col1, col2, col3 = st.columns([1, 2, 1])  # Adjust column widths as needed
     with col2:
         st.plotly_chart(fig6, use_container_width=True)  # Center the plot and allow it to stretch within the middle column
+        
+        
+    st.markdown("""
+                
+### **Key Takeaways from the Heatmap**  
+- **Unique Mutation Profiles:** Each variant (Alpha, Beta, Gamma, Delta, Omicron) has distinct dominant mutations, though some (e.g., **S:N501Y, S:P681H**) appear across multiple variants due to convergent evolution.  
+- **Mutation Impact on Spread:** Highly prevalent mutations (darker shades) often drive **higher transmissibility and immune escape**. Example: **Delta (S:P681R) → Faster Spread**, **Omicron (Multiple Mutations) → Higher Reinfection Rates**.  
+- **Variants Replacing Each Other:** Each new dominant variant had mutations that gave it a survival edge—either **faster transmission or better immune evasion**. **Delta replaced Alpha**, and **Omicron outcompeted Delta** due to stronger immune escape.  
+- **Mutation Accumulation Over Time:** Some mutations persisted across variants, while others evolved further. **Omicron retained earlier mutations while introducing new ones.**  
+- **Epidemiological Waves & Variant Evolution:** Major infection waves align with dominant variants:  
+    - **Alpha → Beta → Gamma** (Early 2021)  
+    - **Delta Surge** (Mid-to-Late 2021)  
+    - **Omicron Dominance** (Late 2021 - 2022)  
+- **Conclusion:** Mutations **directly influenced variant success** and led to successive COVID-19 outbreaks. The heatmap visually captures how **mutations shaped variant evolution** over time.
+                """)
 
 with st.expander("🦠 SEI³RD Pandemic Simulator", expanded=False):
     st.write("ello apan ka simulation")
