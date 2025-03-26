@@ -1,5 +1,5 @@
 import streamlit as st
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 import plotly.express as px
 import plotly.subplots as sp
 import plotly.graph_objects as go
@@ -9,8 +9,8 @@ from statsmodels.tsa.seasonal import STL
 import statsmodels.api as sm
 from statsmodels.tsa.stattools import adfuller
 from statsmodels.tsa.arima.model import ARIMA
-import pmdarima as pm
-import seaborn as sns
+# import pmdarima as pm
+# import seaborn as sns
 
 st.set_page_config(layout="wide")
 
