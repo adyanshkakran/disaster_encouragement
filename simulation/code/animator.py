@@ -127,6 +127,6 @@ class SEI3RD_Animation:
         plt.show()
         
     def save_gif(self, filename='animation.gif'):
-        ani = animation.FuncAnimation(self.fig, self.update, frames=self.steps // 10, interval=100, repeat=False)
+        ani = animation.FuncAnimation(self.fig, self.update, frames=self.steps, interval=100, repeat=False)
         ani.save(filename, writer='imagemagick', fps=5)
         plt.close()
