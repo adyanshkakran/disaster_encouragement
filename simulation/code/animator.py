@@ -35,7 +35,7 @@ class SEI3RD_Animation:
         # Add Step Counter
         self.step_text = self.ax.text(0.02, 0.95, '', transform=self.ax.transAxes, fontsize=12, color='black',
                                       bbox=dict(facecolor='white', edgecolor='black', boxstyle='round,pad=0.3'))
-        self.legend_text = self.ax.text(1.02, 0.5, '', transform=self.ax.transAxes, fontsize=10, verticalalignment='center')
+        self.legend_text = self.ax.text(1.01, 1, '', transform=self.ax.transAxes, fontsize=10, verticalalignment='center')
 
 
 
@@ -74,7 +74,7 @@ class SEI3RD_Animation:
             f_vec = x - self.results[(frame - 1)*100][1].astype(int)
         # Apply transitions using f_vec
         ΔS, ΔE, ΔI3a, ΔI3s, ΔI3v, ΔR, ΔD = map(int, f_vec)
-        print(f"ΔS: {ΔS}, ΔE: {ΔE}, ΔI3a: {ΔI3a}, ΔI3s: {ΔI3s}, ΔI3v: {ΔI3v}, ΔR: {ΔR}, ΔD: {ΔD}")
+        # print(f"ΔS: {ΔS}, ΔE: {ΔE}, ΔI3a: {ΔI3a}, ΔI3s: {ΔI3s}, ΔI3v: {ΔI3v}, ΔR: {ΔR}, ΔD: {ΔD}")
 
         # I3 → D
         infected_indices = np.where(self.states == 4)[0]
@@ -107,8 +107,6 @@ class SEI3RD_Animation:
         for i in to_expose:
             self.states[i] = 1
 
-        
-
         # Update scatter plot
         self.sc.set_offsets(self.positions)
         self.sc.set_color([self.colors[int(s)] for s in self.states])
@@ -117,6 +115,9 @@ class SEI3RD_Animation:
         # Update legend with state counts
         state_labels = {0: "S", 1: "E", 2: "I3a", 3: "I3s", 4: "I3v", 5: "R", 6: "D"}
         state_counts = {state_labels[k]: np.sum(self.states == k) for k in range(7)}
+        # legend_text = "\n".join(
+        #     [f"{state_labels[k]}: {state_counts[state_labels[k]]} ({self.colors[k]})" for k in range(7)]
+        # )
         legend_text = "\n".join([f"{k}: {v}" for k, v in state_counts.items()])
         self.legend_text.set_text(legend_text)
         return self.sc, self.step_text, self.legend_text
@@ -124,3 +125,8 @@ class SEI3RD_Animation:
     def run(self):
         ani = animation.FuncAnimation(self.fig, self.update, frames=self.steps, interval=100, repeat=False)
         plt.show()
+        
+    def save_gif(self, filename='animation.gif'):
+        ani = animation.FuncAnimation(self.fig, self.update, frames=self.steps // 10, interval=100, repeat=False)
+        ani.save(filename, writer='imagemagick', fps=5)
+        plt.close()

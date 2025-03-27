@@ -24,14 +24,12 @@ def beta(t):
     else:
         return matrix(vector([0.075]).reshape((1, 1)))
 
-def run_simulation(data_set_name):
+def run_simulation(data_set_name, data_directory_name, plot_results=True):
+    print("SIMULATION: " + data_set_name, data_directory_name)
     t_start = 0
-    t_end = 600
+    t_end = 300
     stepsize = 1e-2
 
-    # Preparing data parsing
-    # data_set_name = "scenarios-underlying-figure-4"
-    data_directory_name = "../data/" + data_set_name + "/"
     data_directory = os.fsencode(data_directory_name)
 
     for file in os.listdir(data_directory):
@@ -57,8 +55,8 @@ def run_simulation(data_set_name):
                 ode_system = SEIIIRD_Tracing_Model(packed_data[1:-1])
             else:
                 print("Setting up the tracing-free model")
-                ode_system = SEIIIRD_Model(packed_data[1:-1], time_dependent_params={'beta_asym': beta, 'beta_sym': beta, 'beta_sev': beta})
-                # ode_system = SEIIIRD_Model(packed_data[1:-1])
+                # ode_system = SEIIIRD_Model(packed_data[1:-1], time_dependent_params={'beta_asym': beta, 'beta_sym': beta, 'beta_sev': beta})
+                ode_system = SEIIIRD_Model(packed_data[1:-1])
 
             # Solve the ODE system
             explicit_euler = Explicit_Euler(ode_system, stepsize)
@@ -81,19 +79,27 @@ def run_simulation(data_set_name):
             # Visualize results
             visualizer = Visualizer(tracing_data_given, result_dict, N, K, beds, t_start, t_end,
                                     "../results/" + data_set_name + "/" + data_filename_prefix)
-
-            visualizer.plot_all_curves()
-            visualizer.plot_aggregated_curves()
-            # visualizer.paper_plot_figure_1()
-            if tracing_data_given:
-                visualizer.paper_plot_figure_3()
-                visualizer.paper_plot_figure_4()
-
+            
             animation_obj = SEI3RD_Animation(N, t_end, results)
-            animation_obj.run()
+
+            if plot_results:
+                visualizer.plot_all_curves()
+                visualizer.plot_aggregated_curves()
+                # visualizer.paper_plot_figure_1()
+                if tracing_data_given:
+                    visualizer.paper_plot_figure_3()
+                    visualizer.paper_plot_figure_4()
+
+                animation_obj.save_gif()
+
+            return result_dict, visualizer, animation_obj
+            
 
 def main():
-    run_simulation("animation")
+    data_set_name = "animation"
+    data_directory_name = "../data/" + data_set_name + "/"
+    run_simulation(data_set_name, data_directory_name)
+
     
 if __name__ == "__main__":
     main()

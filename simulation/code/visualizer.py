@@ -127,7 +127,7 @@ class Visualizer:
         plot.savefig(self.filename + "_super_small.png")
         plot.close("all")
 
-    def plot_aggregated_curves(self):
+    def plot_aggregated_curves(self, return_fig = False):
         fig = go.Figure()
 
         fig.add_trace(go.Scatter(x=self.t_vals, y=self.S_vals_aggr, mode='lines', name='Susceptible'))
@@ -147,11 +147,15 @@ class Visualizer:
 
         fig.add_trace(go.Scatter(x=self.t_vals, y=self.R_vals_aggr, mode='lines', name='Recovered', line=dict(color='limegreen')))
         fig.add_trace(go.Scatter(x=self.t_vals, y=self.D_vals_aggr, mode='lines', name='Deceased', line=dict(color='firebrick')))
-        fig.add_trace(go.Scatter(x=self.t_vals, y=self.sev_total_vals, mode='lines', name='sev_total', line=dict(color='chocolate', dash='dash')))
 
         # Plot horizontal lines for beds
-        fig.add_shape(type='line', x0=self.t_start, x1=self.t_end, y0=self.beds, y1=self.beds,
-                      line=dict(color='cornflowerblue', dash='dash'), name='beds')
+        fig.add_trace(go.Scatter(
+            x=[self.t_start, self.t_end],
+            y=[self.beds, self.beds],
+            mode='lines',
+            line=dict(color='cornflowerblue', dash='dash'),
+            name='Beds'
+        ))
 
         fig.update_layout(
             # title='Aggregated Curves',
@@ -166,6 +170,9 @@ class Visualizer:
             #     x=0.01
             # )
         )
+        
+        if return_fig:
+            return fig
 
         fig.write_image(self.filename + "_aggr_full.png")
         ymax = 0.2 * self.N_total

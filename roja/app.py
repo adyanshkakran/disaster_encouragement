@@ -1,6 +1,5 @@
 import streamlit as st
-# import matplotlib.pyplot as plt
-import plotly.express as px
+import matplotlib.pyplot as plt
 import plotly.subplots as sp
 import plotly.graph_objects as go
 import pandas as pd
@@ -9,6 +8,17 @@ from statsmodels.tsa.seasonal import STL
 import statsmodels.api as sm
 from statsmodels.tsa.stattools import adfuller
 from statsmodels.tsa.arima.model import ARIMA
+import re
+import time
+from matplotlib import animation
+from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
+# import PillowWriter
+from matplotlib.animation import PillowWriter
+
+import sys
+sys.path.append('../simulation/code')
+
+from run_simulations import run_simulation
 # import pmdarima as pm
 # import seaborn as sns
 
@@ -367,7 +377,7 @@ with st.expander("🔮 Forecasting of Variants", expanded=False):
     fig5.add_trace(go.Scatter(x=forecast_data.index, y=forecast_data, mode='lines', name=f"{variant} - Forecast",
                               line=dict(color='red')), row=1, col=2)
 
-    fig5.update_layout(title=f"ARIMA Forecast for {variant}", xaxis_title="Date", yaxis_title="Number of Sequences",
+    fig5.update_layout(title=f"ARIMA Forecast for {variant}", xaxis_title="Date", yaxis_title="Number of Cases (per million people)",
                        template="plotly_white")
     st.plotly_chart(fig5)
 
@@ -420,6 +430,212 @@ Think of the virus as a tree—COVID-19 is the trunk, and variants are its growi
     - **Omicron Dominance** (Late 2021 - 2022)  
 - **Conclusion:** Mutations **directly influenced variant success** and led to successive COVID-19 outbreaks. The heatmap visually captures how **mutations shaped variant evolution** over time.
                 """)
+    
+def read_result_file(file_name):
+    with open(file_name, "r") as file:
+        content = file.read()
+
+    # Extract values using regular expressions
+    deaths_match = re.search(r"Total number of deaths:\s+([\d\.]+)", content)
+    icu_match = re.search(r"Days with exceeded ICU bed capacity:\s+([\d\.]+)", content)
+    duration_match = re.search(r"Duration of pandemic $$in days$$:\s+([\d\.]+)", content)
+
+    # Store values (convert to float)
+    total_deaths = int(float(deaths_match.group(1))) if deaths_match else None
+    icu_exceeded_days = int(float(icu_match.group(1))) if icu_match else None
+    pandemic_duration = int(float(duration_match.group(1))) if duration_match else None
+    return total_deaths, icu_exceeded_days, pandemic_duration
+
+
+# Run animation dynamically
+# def run_animation(animation_obj, plot_placeholder):
+#     for frame in range(0, animation_obj.steps, 2):  # Skip every other frame for smoother animation
+#         update_data = animation_obj.update(frame)
+#         animation_obj.fig.data[0].x = update_data["x"]
+#         animation_obj.fig.data[0].y = update_data["y"]
+#         animation_obj.fig.data[0].marker = update_data["marker"]
+#         animation_obj.fig.layout.annotations = update_data["annotations"]
+        
+#         # Update the figure in Streamlit
+#         plot_placeholder.pyplot(animation_obj.fig, use_container_width=True)
+#         time.sleep(0.2)  # Increase sleep duration for smoother rendering
+
+def run_animation(animation_obj, fig, ax):
+    def update(frame):
+        animation_obj.update(frame)
+        ax.clear()
+        ax.scatter(animation_obj.positions[:, 0], animation_obj.positions[:, 1], 
+                   c=[animation_obj.colors[int(s)] for s in animation_obj.states])
+        ax.set_title(f"Step {frame + 1} / {animation_obj.steps}")
+
+    ani = animation.FuncAnimation(fig, update, frames=animation_obj.steps, interval=100, repeat=False)
+    return ani
 
 with st.expander("🦠 SEI³RD Pandemic Simulator", expanded=False):
-    st.write("ello apan ka simulation")
+    # st.write("ello apan ka simulation")
+    
+    eqs = [
+        r"\frac{dS}{dt} = - \sum_{\ell=1}^{K} \left( \beta^{\text{asym}}_{\ell} I^{\text{asym}}_{\ell} + \beta^{\text{sym}}_{\ell} I^{\text{sym}}_{\ell} + \beta^{\text{sev}}_{\ell} I^{\text{sev}}_{\ell} \right) S",
+        r"\frac{dE}{dt} = \sum_{\ell=1}^{K} \left( \beta^{\text{asym}}_{\ell} I^{\text{asym}}_{\ell} + \beta^{\text{sym}}_{\ell} I^{\text{sym}}_{\ell} + \beta^{\text{sev}}_{\ell} I^{\text{sev}}_{\ell} \right) S - \varepsilon E",
+        r"\frac{dI^{\text{asym}}}{dt} = \eta \varepsilon E - \gamma^{\text{asym}} I^{\text{asym}}",
+        r"\frac{dI^{\text{sym}}}{dt} = (1 - \eta)(1 - \nu) \varepsilon E - \gamma^{\text{sym}} I^{\text{sym}}",
+        r"\frac{dI^{\text{sev}}}{dt} = (1 - \eta) \nu \varepsilon E - \left( (1 - \sigma(t)) \gamma^{\text{sev-r}} + \sigma(t) \gamma^{\text{sev-d}} \right) I^{\text{sev}}",
+        r"\frac{dR}{dt} = \gamma^{\text{asym}} I^{\text{asym}} + \gamma^{\text{sym}} I^{\text{sym}} + (1 - \sigma(t)) \gamma^{\text{sev-r}} I^{\text{sev}}",
+        r"\frac{dD}{dt} = \sigma(t) \gamma^{\text{sev-d}} I^{\text{sev}}"
+    ]
+    
+    st.markdown(f"""
+                # SEIIIRD Epidemiological Model
+
+The SEIIIRD model is an extension of classical compartmental models used in epidemiology, incorporating various stages of infection and severity. It is particularly useful for modeling diseases where individuals can be asymptomatic, symptomatic, or severely infected, with possible outcomes of recovery or death.
+
+## Compartments
+- **S (Susceptible):** Individuals who are at risk of infection.
+- **E (Exposed):** Individuals who have been exposed to the virus but are not yet infectious.
+- **I_asym (Infected Asymptomatic):** Infected individuals who do not show symptoms but can still transmit the disease.
+- **I_sym (Infected Symptomatic):** Infected individuals who develop symptoms.
+- **I_sev (Infected Severe):** Infected individuals who experience severe symptoms and may require hospitalization.
+- **R (Recovered):** Individuals who have recovered from the disease and are no longer infectious.
+- **D (Dead):** Individuals who have died from the disease.
+
+## Differential Equations
+The following equations govern the dynamics of the system:
+
+$$
+{eqs[0]}
+$$
+
+$$
+{eqs[1]}
+$$
+
+$$
+{eqs[2]}
+$$
+
+$$
+{eqs[3]}
+$$
+
+$$
+{eqs[4]}
+$$
+
+$$
+{eqs[5]}
+$$
+
+$$
+{eqs[6]}
+$$
+
+## Explanation
+- The **susceptible (S)** population decreases as individuals become exposed (E) through contact with infected individuals.
+- The **exposed (E)** group transitions to either **asymptomatic infected (I_asym)** or **symptomatic infected (I_sym, I_sev)** at a rate $$ \epsilon $$.
+- A fraction $$ \eta $$ of exposed individuals become **asymptomatic (I_asym)**, while the remaining become **symptomatic (I_sym) or severe (I_sev)** based on probability $$ \nu $$.
+- Asymptomatic and symptomatic individuals recover at rates $$ \gamma^{{asym}} $$ and $$ \gamma^{{sym}} $$ respectively.
+- Severely infected individuals either recover at a rate $$ \gamma^{{sev-r}} $$ or die at a rate $$ \gamma^{{sev-d}} $$, with $$ \sigma(t) $$ representing the probability of death.
+- The **recovered (R)** population increases as individuals from **I_asym, I_sym, and I_sev** recover.
+- The **dead (D)** population increases as severely infected individuals die.
+
+This model provides a comprehensive framework for understanding disease progression and evaluating intervention strategies such as social distancing and vaccination.
+
+                
+                """, unsafe_allow_html=True)
+    
+    # Initialize session state
+    if "simulation_type" not in st.session_state:
+        st.session_state.simulation_type = None
+
+    st.write("Choose simulation type:")
+
+    # Create three columns: one for text, one for the first button, and one for the second button
+    col1, col2, col3 = st.columns([1, 2, 2])
+
+    with col2:
+        if st.button("Variant Based"):
+            st.session_state.simulation_type = "variant"
+
+    with col3:
+        if st.button("Parameter Based"):
+            st.session_state.simulation_type = "parameter"
+    
+    if st.session_state.simulation_type == "parameter":
+        with st.form("epidemic_form"):
+            col1, col2 = st.columns(2)
+
+            with col1:
+                N = st.slider("No. of persons", 100, 1000, 500)
+                beta = st.slider("Infectivity Rate", 0.0, 1.0, 0.3)
+
+            with col2:
+                sigma = st.slider("Death rate", 0.0, 1.0, 0.3)
+                gamma_inv = st.slider("Infectious Period (Days)", 1, 20, 5)
+
+            submitted = st.form_submit_button("Submit")
+
+        if submitted:
+            df = pd.read_csv("../simulation/data/simulation/1.csv", sep=";", header=None)
+            df.loc[df[0] == 'N', 1] = N
+            df.loc[df[0] == 'N_total', 1] = N
+            df.loc[df[0] == 'beta_asym', 1] = beta
+            df.loc[df[0] == 'beta_sym', 1] = beta
+            df.loc[df[0] == 'beta_sev', 1] = beta
+            df.loc[df[0] == 'sigma', 1] = sigma
+            df.loc[df[0] == 'gamma_asym', 1] = 1.0 / gamma_inv
+            df.loc[df[0] == 'gamma_sym', 1] = 1.0 / gamma_inv
+            df.loc[df[0] == 'gamma_sev_d_hat', 1] = 1.0 / gamma_inv
+            df.loc[df[0] == 'gamma_sev_r_hat', 1] = 1.0 / gamma_inv
+            df.loc[df[0] == 'S', 1] = int(0.95 * N)
+            df.loc[df[0] == 'E', 1] = int(0.02 * N)
+            df.loc[df[0] == 'I_asym', 1] = int(0.01 * N)
+            df.loc[df[0] == 'I_sym', 1] = int(0.01 * N)
+            df.loc[df[0] == 'I_sev', 1] = int(0.01 * N)
+            df.loc[df[0] == 'R', 1] = N - int(0.95 * N) - int(0.02 * N) - 3 * int(0.01 * N)
+            df.loc[df[0] == 'D', 1] = 0.0
+            df.loc[df[0] == 'beds', 1] = int(0.02 * N)
+            
+            df.to_csv("../simulation/data/simulation/1.csv", sep=";", header=False, index=False)
+            
+            result_dict, visualizer, animation_obj = run_simulation("simulation", "../simulation/data/simulation/", plot_results=False)
+            
+            fig = visualizer.plot_aggregated_curves(return_fig=True)
+            
+            st.plotly_chart(fig)
+            
+            deaths, icu, duration = read_result_file("../results/simulation/1.res")
+            st.write(f"Total deaths: {deaths}")
+            st.write(f"Days with exceeded ICU bed capacity: {icu}")
+            st.write(f"Duration of pandemic (in days): {duration}")
+            
+            
+            animation_obj.save_gif('animation.gif')
+            if 'animation_displayed' not in st.session_state:
+                col1, col2 = st.columns([5, 3])  # Adjust column widths as needed
+                with col1:
+                    st.image('animation.gif')
+                with col2:
+                    st.markdown("""
+                                **S**: blue  
+                                **E**: orange  
+                                **I_asym**: red  
+                                **I_sym**: dark red  
+                                **I_sev**: purple  
+                                **R**: green  
+                                **D**: black  
+                                """)
+                st.session_state['animation_displayed'] = True
+            
+    if st.session_state.simulation_type == "variant":
+        variant = st.selectbox("Select Variant", ["Beta", "Gamma", "Alpha", "Delta", "Omicron"])
+        st.write("Death Rate Order: Beta > Gamma > Alpha > Delta > Omicron")
+        
+        result_dict, visualizer, animation_obj = run_simulation(variant, "../simulation/data/"+variant+"/", plot_results=False)
+        fig = visualizer.plot_aggregated_curves(return_fig=True)
+        
+        st.plotly_chart(fig)
+        
+        deaths, icu, duration = read_result_file(f"../results/{variant}/a.res")
+        st.write(f"Total deaths: {deaths}")
+        st.write(f"Days with exceeded ICU bed capacity: {icu}")
+        st.write(f"Duration of pandemic (in days): {duration}")
