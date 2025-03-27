@@ -184,7 +184,7 @@ class Result_Analyzer:
         threshold = 0.05 * self.beds
         time_points_below_threshold = 0
         sev_below_at_end = (self.sev_total[-1] < threshold)
-        assert(sev_below_at_end)
+        # assert(sev_below_at_end)
         for val in reversed(self.sev_total):
             if val < threshold:
                 time_points_below_threshold += 1

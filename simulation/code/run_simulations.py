@@ -12,6 +12,7 @@ from seiiird_tracing_model import SEIIIRD_Tracing_Model
 from explicit_euler import Explicit_Euler
 from result_analyzer import Result_Analyzer
 from visualizer import Visualizer
+from animator import SEI3RD_Animation
 
 def beta(t):
     if t < 100:
@@ -88,8 +89,11 @@ def run_simulation(data_set_name):
                 visualizer.paper_plot_figure_3()
                 visualizer.paper_plot_figure_4()
 
+            animation_obj = SEI3RD_Animation(N, t_end, results)
+            animation_obj.run()
+
 def main():
-    run_simulation("Alpha")
+    run_simulation("animation")
     
 if __name__ == "__main__":
     main()

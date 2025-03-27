@@ -1,8 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
-import plotly.graph_objects as go
-
 
 class SEI3RD_Animation:
     def __init__(self, num_people, steps, results):
@@ -31,19 +29,18 @@ class SEI3RD_Animation:
         self.states[E+I3a+I3s+I3v+R:E+I3a+I3s+I3v+R+D] = 6
         # # Solve ODE to get f_vec for each step
         # self.simulation_results = frames
-        # self.fig, self.ax = plt.subplots()
-        # self.sc = self.ax.scatter(self.positions[:, 0], self.positions[:, 1], c=[self.colors[int(s)] for s in self.states])
+        self.fig, self.ax = plt.subplots()
+        self.sc = self.ax.scatter(self.positions[:, 0], self.positions[:, 1], c=[self.colors[int(s)] for s in self.states])
 
-        # # Add Step Counter
-        # self.step_text = self.ax.text(0.02, 0.95, '', transform=self.ax.transAxes, fontsize=12, color='black',
-        #                               bbox=dict(facecolor='white', edgecolor='black', boxstyle='round,pad=0.3'))
-        # self.legend_text = self.ax.text(1.02, 0.5, '', transform=self.ax.transAxes, fontsize=10, verticalalignment='center')
-        self.fig = go.Figure()
-        self.marker_size = 5 
+        # Add Step Counter
+        self.step_text = self.ax.text(0.02, 0.95, '', transform=self.ax.transAxes, fontsize=12, color='black',
+                                      bbox=dict(facecolor='white', edgecolor='black', boxstyle='round,pad=0.3'))
+        self.legend_text = self.ax.text(1.02, 0.5, '', transform=self.ax.transAxes, fontsize=10, verticalalignment='center')
+
 
 
     def closest_individuals(self, target_state, reference_state, num):
-        """Find `num` closest individuals with `target_state` to any `reference_state` individual."""
+        """Find num closest individuals with target_state to any reference_state individual."""
         reference_positions = self.positions[np.isin(self.states, reference_state)]
         target_positions = np.where(self.states == target_state)[0]
 
@@ -61,15 +58,12 @@ class SEI3RD_Animation:
         else:
             return []
 
-    def get_scatter(self):
-        return go.Scatter(
-            x=self.positions[:, 0], y=self.positions[:, 1],
-            mode='markers',
-            marker=dict(color=[self.colors[int(s)] for s in self.states], size=self.marker_size)
-        )
-
-
     def update(self, frame):
+
+        self.positions += (np.random.rand(self.num_people, 2) - 0.5) * 0.01
+        # Ensure positions remain within [0, 1]
+        self.positions = np.clip(self.positions, 0, 1)
+
         x = self.results[frame*100][1]
         # Convert x to int
         x = x.astype(int)
@@ -116,22 +110,17 @@ class SEI3RD_Animation:
         
 
         # Update scatter plot
-        # self.sc.set_offsets(self.positions)
-        # self.sc.set_color([self.colors[int(s)] for s in self.states])
-        # self.step_text.set_text(f"Day: {frame + 1}/{self.steps}")
+        self.sc.set_offsets(self.positions)
+        self.sc.set_color([self.colors[int(s)] for s in self.states])
+        self.step_text.set_text(f"Day: {frame + 1}/{self.steps}")
 
-        # # Update legend with state counts
-        # state_labels = {0: "S", 1: "E", 2: "I3a", 3: "I3s", 4: "I3v", 5: "R", 6: "D"}
-        # state_counts = {state_labels[k]: np.sum(self.states == k) for k in range(7)}
-        # legend_text = "\n".join([f"{k}: {v}" for k, v in state_counts.items()])
-        # self.legend_text.set_text(legend_text)
-        return self.get_scatter()
+        # Update legend with state counts
+        state_labels = {0: "S", 1: "E", 2: "I3a", 3: "I3s", 4: "I3v", 5: "R", 6: "D"}
+        state_counts = {state_labels[k]: np.sum(self.states == k) for k in range(7)}
+        legend_text = "\n".join([f"{k}: {v}" for k, v in state_counts.items()])
+        self.legend_text.set_text(legend_text)
+        return self.sc, self.step_text, self.legend_text
 
     def run(self):
-        frames = [go.Frame(data=[self.update(f)]) for f in range(self.steps)]
-        self.fig.add_trace(self.get_scatter())
-        self.fig.update_layout(updatemenus=[{
-            'type': 'buttons', 'showactive': False,
-            'buttons': [{'label': 'Play', 'method': 'animate', 'args': [None]}]
-        }], frames=frames)
-        self.fig.show()
+        ani = animation.FuncAnimation(self.fig, self.update, frames=self.steps, interval=100, repeat=False)
+        plt.show()
