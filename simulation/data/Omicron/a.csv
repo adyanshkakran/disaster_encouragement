@@ -1,9 +1,9 @@
 N_total;100000,0000
 K;1,0000
 N;100000,0000
-beta_asym;0,2100
-beta_sym;0,2100
-beta_sev;0,2100
+beta_asym;0,2500
+beta_sym;0,2500
+beta_sev;0,2500
 epsilon;0,2000
 eta;0,1500
 nu;0,120

@@ -110,7 +110,7 @@ with st.expander("📈 Time Series of Variants", expanded=False):
             fig = go.Figure()
             fig.add_trace(go.Scatter(
                 x=time_series_variants.index, 
-                y=time_series_variants[variant], 
+                y=time_series_variants[variant] // 199, 
                 mode='lines', 
                 name=variant,
                 line=dict(color=colors[0])  # Add color
@@ -132,7 +132,7 @@ with st.expander("📈 Time Series of Variants", expanded=False):
             fig = go.Figure()
             fig.add_trace(go.Scatter(
                 x=time_series_variants.index, 
-                y=time_series_variants[variant], 
+                y=time_series_variants[variant] // 199, 
                 mode='lines', 
                 name=variant,
                 line = dict(color=colors[1:3][i])  # Add color
@@ -155,7 +155,7 @@ with st.expander("📈 Time Series of Variants", expanded=False):
             fig = go.Figure()
             fig.add_trace(go.Scatter(     
                 x=time_series_variants.index,
-                y=time_series_variants[variant],
+                y=time_series_variants[variant] // 199,
                 mode='lines',
                 name=variant,
                 line = dict(color=colors[3:][i])  
@@ -373,8 +373,8 @@ with st.expander("🔮 Forecasting of Variants", expanded=False):
     forecast_data = pd.read_csv(f"{variant}_forecast_{forecast_steps}.csv", index_col='Date', parse_dates=True)['predicted_mean']
 
     fig5 = sp.make_subplots(rows=1, cols=2, subplot_titles=[f"{variant} - Historical Data", f"{variant} - Forecast"])
-    fig5.add_trace(go.Scatter(x=variant_data.index, y=variant_data, mode='lines', name=f"{variant} - Historical Data"), row=1, col=1)
-    fig5.add_trace(go.Scatter(x=forecast_data.index, y=forecast_data, mode='lines', name=f"{variant} - Forecast",
+    fig5.add_trace(go.Scatter(x=variant_data.index, y=variant_data // 199, mode='lines', name=f"{variant} - Historical Data"), row=1, col=1)
+    fig5.add_trace(go.Scatter(x=forecast_data.index, y=forecast_data // 199, mode='lines', name=f"{variant} - Forecast",
                               line=dict(color='red')), row=1, col=2)
 
     fig5.update_layout(title=f"ARIMA Forecast for {variant}", xaxis_title="Date", yaxis_title="Number of Cases (per million people)",
@@ -438,8 +438,8 @@ def read_result_file(file_name):
     # Extract values using regular expressions
     deaths_match = re.search(r"Total number of deaths:\s+([\d\.]+)", content)
     icu_match = re.search(r"Days with exceeded ICU bed capacity:\s+([\d\.]+)", content)
-    duration_match = re.search(r"Duration of pandemic $$in days$$:\s+([\d\.]+)", content)
-
+    duration_match = re.search(r"Duration of pandemic \(in days\):\s+([\d\.]+)", content)
+    
     # Store values (convert to float)
     total_deaths = int(float(deaths_match.group(1))) if deaths_match else None
     icu_exceeded_days = int(float(icu_match.group(1))) if icu_match else None
