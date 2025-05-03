@@ -57,15 +57,15 @@ with col1:
     """)
 
 with col2:
-    st.image("intro.jpg", caption="COVID-19 Variants Emergence", use_container_width=True)
+    st.image("data/intro.jpg", caption="COVID-19 Variants Emergence", use_container_width=True)
 
 # Data Processing
-time_series_variants = pd.read_csv('time_series_variants.csv', index_col='Date', parse_dates=True)
+time_series_variants = pd.read_csv('data/time_series_variants.csv', index_col='Date', parse_dates=True)
 variants = time_series_variants.columns[0:]
 
 dfs = []
 for variant in variants:
-    df = pd.read_csv(f'{variant}.tsv', sep='\t')
+    df = pd.read_csv(f'data/{variant}.tsv', sep='\t')
     df['Variant'] = variant  # Add variant column
     df['first_seq'] = pd.to_datetime(df['first_seq'])  # Convert to datetime
     df['last_seq'] = pd.to_datetime(df['last_seq'])  
@@ -370,7 +370,7 @@ with st.expander("🔮 Forecasting of Variants", expanded=False):
     forecast_steps = st.selectbox("Select the number of weeks to forecast for:", [6, 12, 24])
 
     variant_data = weekly_data[variant].dropna()
-    forecast_data = pd.read_csv(f"{variant}_forecast_{forecast_steps}.csv", index_col='Date', parse_dates=True)['predicted_mean']
+    forecast_data = pd.read_csv(f"data/{variant}_forecast_{forecast_steps}.csv", index_col='Date', parse_dates=True)['predicted_mean']
 
     fig5 = sp.make_subplots(rows=1, cols=2, subplot_titles=[f"{variant} - Historical Data", f"{variant} - Forecast"])
     fig5.add_trace(go.Scatter(x=variant_data.index, y=variant_data // 199, mode='lines', name=f"{variant} - Historical Data"), row=1, col=1)
@@ -390,7 +390,7 @@ with st.expander("🧬 Mutation Frequency", expanded=False):
 The Centers for Disease Control (CDC) defines a mutation as a single change in a virus’ genome or genetic code. Viruses like COVID-19 constantly mutate as they replicate in human cells. Most mutations are minor, but some can give the virus an advantage—making it spread faster or evade immunity. When this happens, a new **variant** is formed.   Scientists track these changes by mapping the virus’s genetic code, allowing them to observe COVID-19’s evolution in real time. To simplify variant tracking, the **World Health Organization (WHO)** named them after Greek letters (Alpha, Beta, Delta, Omicron, etc.).  
 Think of the virus as a tree—COVID-19 is the trunk, and variants are its growing branches. Some, like Omicron, have mutations that increase transmissibility but cause milder disease. By studying these changes, scientists can assess risks and predict how future variants might behave.
                 """)
-    mutation_df = pd.read_csv("mutations.csv", index_col=0)
+    mutation_df = pd.read_csv("data/mutations.csv", index_col=0)
     
     # Create a smaller heatmap
     fig6 = go.Figure(data=go.Heatmap(
@@ -609,11 +609,11 @@ This model provides a comprehensive framework for understanding disease progress
             st.write(f"Duration of pandemic (in days): {duration}")
             
             
-            animation_obj.save_gif('animation.gif')
+            animation_obj.save_gif('data/animation.gif')
             if 'animation_displayed' not in st.session_state:
                 col1, col2 = st.columns([5, 3])  # Adjust column widths as needed
                 with col1:
-                    st.image('animation.gif')
+                    st.image('data/animation.gif')
                 with col2:
                     st.markdown("""
                                 **S**: blue  
